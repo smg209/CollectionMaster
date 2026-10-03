@@ -1,0 +1,82 @@
+/* Everything else on this page uses the shared .cm-* classes in wwwroot/css/Site.css. */
+.card-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.card-picture {
+    flex: 0 0 300px;
+    max-width: 100%;
+}
+
+.card-picture-image {
+    display: block;
+    width: 100%;
+    border-radius: 12px;
+}
+
+.card-picture-missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 245 / 337;
+    border-radius: 12px;
+    background: var(--card-background, #FFFFFF);
+    color: var(--text-secondary, #495057);
+}
+
+.picture-languages {
+    margin-top: 10px;
+}
+
+.card-info {
+    flex: 1 1 360px;
+    min-width: 0;
+}
+
+.fact-table {
+    border-collapse: collapse;
+}
+
+.fact-table th {
+    text-align: left;
+    font-weight: 600;
+    padding: 3px 18px 3px 0;
+    color: var(--text-secondary, #495057);
+    white-space: nowrap;
+}
+
+.fact-table td {
+    padding: 3px 0;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.variant-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.variant-name {
+    font-weight: 700;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.owned-note {
+    color: #1E7B45;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.history-row td {
+    background: var(--layout-background-color, #F4F4F4);
+    padding: 8px 12px;
+}
+
+.history-table {
+    width: auto;
+}

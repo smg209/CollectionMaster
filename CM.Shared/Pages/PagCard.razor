@@ -1,0 +1,302 @@
+@page "/pagCard/{CollectibleOid:long}"
+@namespace CM.Shared
+@inherits PagCard_Base
+
+<PageTitle>@(_card?.Name ?? "Card") - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    @if(_card != null) {
+        <a class="cm-back" href="@($"{CMConstants.SetCardsRoute}/{_card.CardSetOid}")">&lt; @_card.SetName</a>
+    } else {
+        <a class="cm-back" href="@CMConstants.CatalogRoute">&lt; All sets</a>
+    }
+
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <p class="cm-error">The card could not be loaded: @_loadError</p>
+    } else if(!_isPageDataLoaded) {
+        <p class="cm-note">Loading...</p>
+    } else if(_card == null) {
+        <p class="cm-note">This card does not exist.</p>
+    } else {
+        <div class="card-top">
+            <div class="card-picture">
+                @if(_image != null) {
+                    <img class="card-picture-image" src="@_image.ImageUrl" alt="@_displayName" />
+                    <div class="cm-small">Picture: @_image.SourceName</div>
+                } else {
+                    <div class="card-picture-missing">No picture</div>
+                }
+
+                @if(_images.Count > 1) {
+                    <div class="cm-toolbar picture-languages">
+                        @foreach(CatalogImageRow oImage in _images) {
+                            <button type="button" class="cm-chip @(oImage.LanguageOid == _languageOid ? "selected" : "")"
+                                    @onclick="() => SelectLanguage(oImage.LanguageOid)">
+                                @oImage.LanguageName
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="card-info">
+                <h1 class="cm-title">@_displayName</h1>
+                <p class="cm-note">
+                    @_card.GameName - @_card.SetName (@_card.SetCode)
+                    @if(!_card.IsSealed) {
+                        <span> - #@_card.CardNumber</span>
+                        @if(_card.CardCountOfficial != null) {
+                            <span> of @_card.CardCountOfficial</span>
+                        }
+                    }
+                </p>
+
+                <div class="cm-stats">
+                    <div class="cm-stat">
+                        <div class="cm-stat-label">Market price</div>
+                        <div class="cm-stat-value">@(_headlinePrice == null ? "-" : CMFormat.Money(_headlinePrice))</div>
+                        <div class="cm-small">@_headlineNote</div>
+                    </div>
+                    <div class="cm-stat">
+                        <div class="cm-stat-label">Versions</div>
+                        <div class="cm-stat-value">@_variants.Count</div>
+                        <div class="cm-small">@_prices.Count current prices from @_sourceCount sources</div>
+                    </div>
+                    <div class="cm-stat">
+                        <div class="cm-stat-label">You own</div>
+                        <div class="cm-stat-value">@(_variants.Sum(oVariant => oVariant.OwnedCount))</div>
+                        <div class="cm-small"><a class="cm-link" href="@CMConstants.CollectionRoute">My collection</a></div>
+                    </div>
+                </div>
+
+                <table class="fact-table">
+                    <tbody>
+                        @if(!_card.IsSealed) {
+                            <tr><th>Rarity</th><td>@_card.Rarity</td></tr>
+                            <tr><th>Category</th><td>@_card.Category</td></tr>
+                            <tr><th>Illustrator</th><td>@_card.Illustrator</td></tr>
+                        } else {
+                            <tr><th>Kind</th><td>Sealed product</td></tr>
+                        }
+                        @foreach(CatalogNameRow oName in _names) {
+                            <tr><th>@oName.LanguageName name</th><td>@oName.Name</td></tr>
+                        }
+                    </tbody>
+                </table>
+
+                <h2 class="cm-section">Where it sells</h2>
+                <div class="cm-toolbar">
+                    @foreach(MarketLink oLink in _links) {
+                        <a class="cm-button" href="@oLink.Url" target="_blank" rel="noopener" title="@oLink.Note">@oLink.Text</a>
+                    }
+                </div>
+                <p class="cm-small">These open the marketplace itself. Sold-listing links show what copies actually sold for.</p>
+            </div>
+        </div>
+
+        @if(_variants.Count > 1) {
+            <h2 class="cm-section">Versions compared</h2>
+            <div class="cm-panel">
+                <table class="cm-table">
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th class="number">TCGplayer market</th>
+                            <th class="number">Near Mint (JustTCG)</th>
+                            <th class="number">Cardmarket trend</th>
+                            <th class="number">Best graded</th>
+                            <th class="number">You own</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(CatalogVariantRow oVariant in _variants) {
+                            <tr>
+                                <td><a class="cm-link" href="@($"{_nav.Uri.Split('#')[0]}#v{oVariant.CollectibleVariantOid}")">@oVariant.DisplayName</a></td>
+                                <td class="number strong">@Summary(oVariant.CollectibleVariantOid, "TCGplayer")</td>
+                                <td class="number">@Summary(oVariant.CollectibleVariantOid, "JustTCG")</td>
+                                <td class="number">@Summary(oVariant.CollectibleVariantOid, "Cardmarket")</td>
+                                <td class="number">@BestGraded(oVariant.CollectibleVariantOid)</td>
+                                <td class="number">@(oVariant.OwnedCount == 0 ? "" : oVariant.OwnedCount.ToString())</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <h2 class="cm-section">Prices by version</h2>
+        <p class="cm-note">
+            One block per version. Every row is one current price from one source; the chart shows
+            how the raw prices have moved since they were first recorded.
+        </p>
+
+        @if(!string.IsNullOrEmpty(_message)) {
+            <p class="@(_messageIsError ? "cm-error" : "cm-ok")">@_message</p>
+        }
+
+        @foreach(CatalogVariantRow oVariant in _variants) {
+            List<CatalogPriceRow> oVariantPrices = PricesOf(oVariant.CollectibleVariantOid);
+
+            <div class="cm-panel" id="@($"v{oVariant.CollectibleVariantOid}")">
+                <div class="variant-header">
+                    <span class="variant-name">@oVariant.DisplayName</span>
+                    <span class="cm-small">@ExternalIdsOf(oVariant.CollectibleVariantOid)</span>
+                    @if(oVariant.OwnedCount > 0) {
+                        <span class="owned-note">You own @oVariant.OwnedCount</span>
+                    }
+                    <button type="button" class="cm-button small primary" @onclick="() => OpenAddForm(oVariant.CollectibleVariantOid)">Add to collection</button>
+                </div>
+
+                @if(_add.CollectibleVariantOid == oVariant.CollectibleVariantOid) {
+                    <div class="cm-form">
+                        <label class="cm-field">Kind
+                            <select class="cm-select" @bind="_addKind">
+                                <option value="raw">Raw</option>
+                                <option value="graded">Graded (slab)</option>
+                            </select>
+                        </label>
+
+                        @if(_addKind != "graded") {
+                            <label class="cm-field">Condition
+                                <select class="cm-select" @bind="_add.ConditionOid">
+                                    @foreach(LookupRow oCondition in _conditions) {
+                                        <option value="@oCondition.Oid">@oCondition.Name</option>
+                                    }
+                                </select>
+                            </label>
+                            <label class="cm-field">Quantity
+                                <input class="cm-input narrow" type="number" min="1" max="500" @bind="_add.Quantity" />
+                            </label>
+                        } else {
+                            <label class="cm-field">Grading company
+                                <select class="cm-select" @bind="_add.GradingCompanyOid" @bind:after="OnCompanyChanged">
+                                    @foreach(LookupRow oCompany in _companies) {
+                                        <option value="@oCompany.Oid">@oCompany.Name</option>
+                                    }
+                                </select>
+                            </label>
+                            <label class="cm-field">Grade
+                                <select class="cm-select" @bind="_add.GradeOid">
+                                    @foreach(LookupRow oGrade in GradesOfCompany()) {
+                                        <option value="@oGrade.Oid">@oGrade.Name</option>
+                                    }
+                                </select>
+                            </label>
+                            <label class="cm-field">Cert number (optional)
+                                <input class="cm-input" maxlength="30" @bind="_add.CertNumber" />
+                            </label>
+                        }
+
+                        <label class="cm-field">Price paid, each (USD)
+                            <input class="cm-input narrow" type="number" min="0" step="0.01" @bind="_add.PurchasePrice" />
+                        </label>
+                        <label class="cm-field">Acquired on
+                            <input class="cm-input" type="date" @bind="_add.AcquiredOn" />
+                        </label>
+                        <label class="cm-field">Notes
+                            <input class="cm-input" maxlength="500" @bind="_add.Notes" />
+                        </label>
+
+                        <button type="button" class="cm-button primary" disabled="@_isSaving" @onclick="SaveAddAsync">Save</button>
+                        <button type="button" class="cm-button" @onclick="CloseAddForm">Cancel</button>
+                    </div>
+                }
+
+                @if(oVariantPrices.Count == 0) {
+                    <p class="cm-small">No price from any source yet.</p>
+                } else {
+                    <PriceChart Series="ChartOf(oVariantPrices)" Title="@($"Price history - {oVariant.DisplayName}")" ShowLegend="true" />
+
+                    <table class="cm-table">
+                        <thead>
+                            <tr>
+                                <th>Source</th>
+                                <th>Raw / graded</th>
+                                <th>Condition or grade</th>
+                                <th class="number">Price</th>
+                                <th class="number">Low</th>
+                                <th class="number">High</th>
+                                <th>Last confirmed</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(CatalogPriceRow oPrice in oVariantPrices) {
+                                <tr>
+                                    <td>
+                                        @if(!string.IsNullOrEmpty(oPrice.SourceUrl)) {
+                                            <a class="cm-link" href="@oPrice.SourceUrl" target="_blank" rel="noopener">@oPrice.SourceDisplay</a>
+                                        } else {
+                                            <span>@oPrice.SourceDisplay</span>
+                                        }
+                                    </td>
+                                    <td>@(oPrice.IsGraded ? "Graded" : "Raw")</td>
+                                    <td>@oPrice.GradeOrCondition</td>
+                                    <td class="number strong">@CMFormat.Money(oPrice.Price, oPrice.CurrencyCode)</td>
+                                    <td class="number">@CMFormat.Money(oPrice.LowPrice, oPrice.CurrencyCode)</td>
+                                    <td class="number">@CMFormat.Money(oPrice.HighPrice, oPrice.CurrencyCode)</td>
+                                    <td>@CMFormat.DateTime(oPrice.LastConfirmed)</td>
+                                    <td>
+                                        <button type="button" class="cm-button small" @onclick="() => ToggleHistory(oPrice.CollectiblePriceOid)">
+                                            @(_historyPriceOid == oPrice.CollectiblePriceOid ? "Hide" : $"History ({oPrice.HistoryCount})")
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                @if(_historyPriceOid == oPrice.CollectiblePriceOid) {
+                                    <tr class="history-row">
+                                        <td colspan="8">
+                                            <table class="cm-table history-table">
+                                                <thead>
+                                                    <tr><th class="number">Price</th><th>First confirmed</th><th>Last confirmed</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach(CatalogPriceHistoryRow oHistory in HistoryOf(oPrice.CollectiblePriceOid)) {
+                                                        <tr>
+                                                            <td class="number">@CMFormat.Money(oHistory.Price, oHistory.CurrencyCode)</td>
+                                                            <td>@CMFormat.DateTime(oHistory.FirstConfirmed)</td>
+                                                            <td>@CMFormat.DateTime(oHistory.LastConfirmed)</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        }
+
+        @if(_sameName.Count > 0) {
+            <h2 class="cm-section">@_card.Name in other sets</h2>
+            <div class="cm-panel">
+                <table class="cm-table">
+                    <thead>
+                        <tr><th></th><th>Set</th><th>Released</th><th>Number</th><th>Rarity</th><th class="number">Versions</th><th class="number">Market price</th><th class="number">You own</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach(CatalogCardRow oOther in _sameName) {
+                            <tr>
+                                <td>
+                                    @if(!string.IsNullOrEmpty(oOther.ThumbnailUrl)) {
+                                        <img class="cm-table-thumb" src="@oOther.ThumbnailUrl" alt="" loading="lazy" />
+                                    }
+                                </td>
+                                <td><a class="cm-link" href="@($"{CMConstants.CardRoute}/{oOther.CollectibleOid}")">@oOther.SetName</a></td>
+                                <td>@(oOther.SetReleasedOn?.ToString("yyyy") ?? "")</td>
+                                <td>#@oOther.CardNumber</td>
+                                <td>@oOther.Rarity</td>
+                                <td class="number">@oOther.VariantCount</td>
+                                <td class="number strong">@(oOther.MarketPrice == null ? "" : (oOther.VariantCount > 1 ? "up to " : "") + CMFormat.Money(oOther.MarketPrice))</td>
+                                <td class="number">@(oOther.OwnedCount == 0 ? "" : oOther.OwnedCount.ToString())</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

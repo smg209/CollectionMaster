@@ -1,0 +1,83 @@
+/* Every var() has a literal fallback: theme variables only exist after the first interactive
+   render has applied a theme. */
+
+/* FSCommon's Site.css sets html/body to overflow:hidden, so the layout owns the viewport and
+   .cm-main is the one scroll region. */
+.cm-layout {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--layout-background-color, #F4F4F4);
+    color: var(--text-primary, #2B2B2B);
+}
+
+.top-bar {
+    flex: 0 0 56px;
+    display: flex;
+    align-items: stretch;
+    background: var(--main-menu-background, #FFFFFF);
+    border-bottom: 1px solid var(--border-primary, #8FAAEA);
+}
+
+.top-bar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 18px;
+    background: var(--logo-background, #2F4050);
+    color: #FFFFFF;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.top-bar-logo {
+    height: 30px;
+    width: auto;
+    display: block;
+}
+
+.top-bar-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    padding: 0 16px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.top-bar-tab {
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    color: var(--unselected-tab-foreground, #495057);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.top-bar-tab:hover {
+    background: var(--tab-hover-background, #EAEAEA);
+    color: var(--tab-hover-foreground, #2B2B2B);
+}
+
+.top-bar-tab.active {
+    background: var(--selected-tab-background, #F4F4F4);
+    color: var(--selected-tab-foreground, #2B2B2B);
+    border-color: var(--selected-tab-border, #8FAAEA);
+    font-weight: 700;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    flex: 0 0 auto;
+}
+
+.cm-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--layout-padding, 1rem);
+}

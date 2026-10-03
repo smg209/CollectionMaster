@@ -1,0 +1,425 @@
+/* CollectionMaster global stylesheet.
+   Generic rules live in _content/FSCommon.Blazor/css/*.css, which App.razor loads first.
+   Only CollectionMaster-specific global rules belong here. Colors come from the theme's CSS
+   variables; every var() carries a literal fallback because no theme is applied until the
+   first interactive render. */
+
+/* Base typography. Without this the sign-in page renders in the browser's serif default.
+   Form controls do not inherit a font on their own. */
+html, body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+button, input, select, textarea {
+    font-family: inherit;
+}
+
+/* ---------------------------------------------------------------------------------------
+   CONNECTION AND ERROR UI
+   Blazor finds #components-reconnect-modal and #blazor-error-ui by id and toggles the
+   components-reconnect-* classes itself - those names are the framework's, do not rename them.
+   Must stay in this global stylesheet: CSS isolation would scope the rules out of reach.
+   --------------------------------------------------------------------------------------- */
+#components-reconnect-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 40000;           /* above MudBlazor dialogs (30000) */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(58, 58, 52, 0.45);
+}
+
+#components-reconnect-modal.components-reconnect-show,
+#components-reconnect-modal.components-reconnect-failed,
+#components-reconnect-modal.components-reconnect-rejected { display: flex; }
+
+#components-reconnect-modal.components-reconnect-hide { display: none; }
+
+.reconnect-dialog {
+    min-width: 320px;
+    max-width: 90vw;
+    padding: 22px 24px;
+    background: var(--page-background, #FFFFFF);
+    border: 1px solid var(--page-border-color, #B0BFD6);
+    border-radius: var(--page-border-radius, 8px);
+    box-shadow: 0 18px 44px rgba(58, 58, 52, 0.28);
+    text-align: center;
+}
+
+.reconnect-title { color: var(--text-primary, #2B2B2B); font-size: 17px; font-weight: 700; }
+.reconnect-text  { margin: 8px 0 0; color: var(--text-secondary, #495057); font-size: 13px; }
+
+/* one line of copy per state */
+.reconnect-when-show,
+.reconnect-when-failed,
+.reconnect-when-rejected { display: none; }
+
+.components-reconnect-show     .reconnect-when-show,
+.components-reconnect-failed   .reconnect-when-failed,
+.components-reconnect-rejected .reconnect-when-rejected { display: block; }
+
+.reconnect-actions { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+
+/* buttons live in a flex row, so they reveal as inline-flex, not block */
+.components-reconnect-failed   .reconnect-actions .reconnect-when-failed,
+.components-reconnect-rejected .reconnect-actions .reconnect-when-rejected { display: inline-flex; }
+
+.reconnect-btn {
+    padding: 7px 16px;
+    background: var(--button-primary-background, #007bff);
+    color: var(--button-primary-color, #FFFFFF);
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.reconnect-btn:hover { opacity: 0.9; }
+
+#blazor-error-ui {
+    display: none;            /* the framework sets display:block on error */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40001;
+    padding: 12px 20px;
+    background: #FBEEEC;
+    border-top: 2px solid #B4685F;
+    color: #8E4A42;
+    font-size: 13px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.12);
+}
+#blazor-error-ui .reload  { margin-left: 10px; color: #8E4A42; font-weight: 700; text-decoration: underline; }
+#blazor-error-ui .dismiss { position: absolute; top: 8px; right: 14px; font-size: 18px; line-height: 1; cursor: pointer; }
+
+/* ---------------------------------------------------------------------------------------
+   CATALOG, COLLECTION AND MARKET PAGES
+   Shared by every data page, so they live here instead of being repeated in each page's
+   scoped stylesheet. All colours come from the theme with a literal fallback.
+   --------------------------------------------------------------------------------------- */
+.cm-title {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.cm-section {
+    margin: 22px 0 8px;
+    font-size: 1.15rem;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.cm-note {
+    margin: 0 0 14px;
+    color: var(--text-secondary, #495057);
+}
+
+.cm-small {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #495057);
+}
+
+.cm-error {
+    margin: 0 0 14px;
+    color: #B3261E;
+}
+
+.cm-ok {
+    margin: 0 0 14px;
+    color: #1E7B45;
+}
+
+.cm-back,
+.cm-link {
+    color: var(--link-color, #1C5FB8);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.cm-back {
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.cm-link:hover,
+.cm-back:hover {
+    text-decoration: underline;
+}
+
+.cm-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.cm-label {
+    color: var(--text-secondary, #495057);
+    font-size: 0.85rem;
+}
+
+.cm-input,
+.cm-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-primary, #8FAAEA);
+    border-radius: 6px;
+    background: var(--card-background, #FFFFFF);
+    color: var(--text-primary, #2B2B2B);
+    font-size: 0.9rem;
+}
+
+.cm-input.wide {
+    min-width: 280px;
+}
+
+.cm-input.narrow {
+    width: 90px;
+}
+
+.cm-button,
+.cm-chip {
+    padding: 6px 14px;
+    border: 1px solid var(--border-primary, #8FAAEA);
+    border-radius: 16px;
+    background: var(--card-background, #FFFFFF);
+    color: var(--text-primary, #2B2B2B);
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.cm-button.primary,
+.cm-chip.selected {
+    background: var(--logo-background, #2F4050);
+    border-color: var(--logo-background, #2F4050);
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+.cm-button.small {
+    padding: 2px 10px;
+    font-size: 0.78rem;
+}
+
+.cm-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.cm-panel {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-primary, #8FAAEA);
+    border-radius: 8px;
+    background: var(--card-background, #FFFFFF);
+    overflow-x: auto;
+}
+
+/* Grid of card or set tiles */
+.cm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
+}
+
+.cm-grid.sets {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+
+.cm-tile {
+    position: relative;
+    display: block;
+    padding: 8px;
+    border: 1px solid var(--border-primary, #8FAAEA);
+    border-radius: 8px;
+    background: var(--card-background, #FFFFFF);
+    color: var(--text-primary, #2B2B2B);
+    text-decoration: none;
+}
+
+.cm-tile:hover {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.cm-tile-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 245 / 337;
+    object-fit: contain;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.cm-tile-image.missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--layout-background-color, #F4F4F4);
+    color: var(--text-secondary, #495057);
+    font-size: 0.85rem;
+}
+
+.cm-tile-logo {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.cm-tile-logo img {
+    max-height: 80px;
+    max-width: 100%;
+}
+
+.cm-tile-logo span {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-secondary, #495057);
+}
+
+.cm-tile-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.cm-tile-facts {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #495057);
+}
+
+.cm-tile-price {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.cm-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: #1E7B45;
+    color: #FFFFFF;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Tables */
+.cm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.cm-table th {
+    text-align: left;
+    padding: 4px 10px 4px 0;
+    border-bottom: 1px solid var(--border-primary, #8FAAEA);
+    color: var(--text-secondary, #495057);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cm-table td {
+    padding: 4px 10px 4px 0;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+    color: var(--text-primary, #2B2B2B);
+    vertical-align: middle;
+}
+
+.cm-table .number {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.cm-table .strong {
+    font-weight: 700;
+}
+
+.cm-table-thumb {
+    height: 44px;
+    width: auto;
+    border-radius: 3px;
+    display: block;
+}
+
+.cm-up {
+    color: #1E7B45;
+}
+
+.cm-down {
+    color: #B3261E;
+}
+
+/* Headline numbers */
+.cm-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.cm-stat {
+    flex: 1 1 150px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-primary, #8FAAEA);
+    border-radius: 8px;
+    background: var(--card-background, #FFFFFF);
+}
+
+.cm-stat-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary, #495057);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.cm-stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.cm-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(128, 128, 128, 0.25);
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.cm-progress > div {
+    height: 100%;
+    background: #1E7B45;
+}
+
+.cm-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px;
+    margin: 8px 0;
+    padding: 10px;
+    border: 1px dashed var(--border-primary, #8FAAEA);
+    border-radius: 8px;
+}
+
+.cm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.78rem;
+    color: var(--text-secondary, #495057);
+}
+
+.cm-section:empty {
+    display: none;
+}

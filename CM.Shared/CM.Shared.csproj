@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>CM.Shared</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.12" />
+    <PackageReference Include="MudBlazor" Version="9.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FSAuthentication\FSAuth.Core\FSAuth.Core.csproj" />
+    <ProjectReference Include="..\..\FSCommon.Blazor\FSCommon.Blazor.csproj" />
+    <ProjectReference Include="..\..\FSCommon.Util\FSCommon.Util.csproj" />
+    <ProjectReference Include="..\..\FSDataUtil\FSDataUtil.Core\FSDataUtil.Core.csproj" />
+    <ProjectReference Include="..\..\FSDataUtil\FSDataUtil.Server\FSDataUtil.Server.csproj" />
+  </ItemGroup>
+
+</Project>

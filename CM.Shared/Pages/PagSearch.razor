@@ -1,0 +1,66 @@
+@page "/pagSearch"
+@namespace CM.Shared
+@inherits PagSearch_Base
+
+<PageTitle>Search - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    <h1 class="cm-title">Search</h1>
+    <p class="cm-note">Find a card or sealed product by name in any language, or by card number.</p>
+
+    <form class="cm-toolbar" @onsubmit="Search" @onsubmit:preventDefault="true">
+        <input class="cm-input wide" placeholder="Charizard, Dracaufeu, 004 ..." @bind="_text" @bind:event="oninput" />
+        <button type="submit" class="cm-button primary" disabled="@_isSearching">Search</button>
+    </form>
+
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <p class="cm-error">The search failed: @_loadError</p>
+    } else if(_isSearching) {
+        <p class="cm-note">Searching...</p>
+    } else if(_searched.Length > 0) {
+        <p class="cm-note">
+            @_results.Count @(_results.Count == 1 ? "result" : "results") for "@_searched"
+            @if(_results.Count >= PagSearch_Base.MaxRows) {
+                <span> - showing the @PagSearch_Base.MaxRows most valuable; add a word to narrow it down</span>
+            }
+        </p>
+
+        <div class="cm-toolbar">
+            <span class="cm-label">Sort</span>
+            <select class="cm-select" @bind="_sort">
+                <option value="price">Price, high to low</option>
+                <option value="priceAsc">Price, low to high</option>
+                <option value="newest">Newest set first</option>
+                <option value="oldest">Oldest set first</option>
+                <option value="name">Name</option>
+            </select>
+            <select class="cm-select" @bind="_show">
+                <option value="all">Cards and sealed products</option>
+                <option value="cards">Cards only</option>
+                <option value="sealed">Sealed products only</option>
+                <option value="owned">Owned</option>
+            </select>
+        </div>
+
+        <div class="cm-grid">
+            @foreach(CatalogCardRow oCard in Visible()) {
+                <a class="cm-tile" href="@($"{CMConstants.CardRoute}/{oCard.CollectibleOid}")">
+                    @if(oCard.OwnedCount > 0) {
+                        <span class="cm-badge" title="Copies you own">@oCard.OwnedCount</span>
+                    }
+                    @if(!string.IsNullOrEmpty(oCard.ThumbnailUrl)) {
+                        <img class="cm-tile-image" src="@oCard.ThumbnailUrl" alt="@oCard.DisplayName" loading="lazy" />
+                    } else {
+                        <div class="cm-tile-image missing">No picture</div>
+                    }
+                    <div class="cm-tile-name">@oCard.DisplayName</div>
+                    <div class="cm-tile-facts">@oCard.SetName</div>
+                    <div class="cm-tile-facts">@(oCard.IsSealed ? "Sealed product" : $"#{oCard.CardNumber} - {oCard.Rarity}")</div>
+                    @if(oCard.MarketPrice != null) {
+                        <div class="cm-tile-price">@(oCard.VariantCount > 1 ? "up to " : "")@CMFormat.Money(oCard.MarketPrice)</div>
+                    }
+                </a>
+            }
+        </div>
+    }
+</div>

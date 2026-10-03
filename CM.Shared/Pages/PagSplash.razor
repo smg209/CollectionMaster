@@ -1,0 +1,19 @@
+@page "/"
+@namespace CM.Shared
+@layout EmptyLayout
+@inherits PagSplash_Base
+
+<PageTitle>CollectionMaster</PageTitle>
+
+<div class="splash-frame">
+    @if(CMSettings.RequireSignIn) {
+        <ModSignIn AppName="@CMConstants.AppName" OnLoginSuccess="HandleLoginSuccessAsync" />
+
+        @if(!string.IsNullOrEmpty(_signInError)) {
+            <div class="splash-error" role="alert">@_signInError</div>
+        }
+    } else {
+        @* Sign-in is switched off: PagSplash_Base sends this tab straight to the home page. *@
+        <p>Loading...</p>
+    }
+</div>

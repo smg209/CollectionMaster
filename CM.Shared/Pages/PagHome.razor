@@ -1,0 +1,88 @@
+@page "/pagHome"
+@namespace CM.Shared
+@inherits PagHome_Base
+
+<PageTitle>Home - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <h1 class="cm-title">CollectionMaster</h1>
+        <p class="cm-error">The home page could not be loaded: @_loadError</p>
+    } else if(!_isPageDataLoaded) {
+        <p class="cm-note">Loading...</p>
+    } else {
+        <h1 class="cm-title">Welcome, @_displayName</h1>
+
+        <form class="cm-toolbar" @onsubmit="Search" @onsubmit:preventDefault="true">
+            <input class="cm-input wide" placeholder="Search every card by name or number" @bind="_search" @bind:event="oninput" />
+            <button type="submit" class="cm-button primary">Search</button>
+            <a class="cm-button" href="@CMConstants.CatalogRoute">Browse sets</a>
+        </form>
+
+        <h2 class="cm-section">Your collection</h2>
+        @if(_itemCount == 0) {
+            <p class="cm-note">Nothing in your collection yet. Open any card and use "Add to collection".</p>
+        } else {
+            <div class="cm-stats">
+                <div class="cm-stat">
+                    <div class="cm-stat-label">Items</div>
+                    <div class="cm-stat-value">@_itemCount</div>
+                </div>
+                <div class="cm-stat">
+                    <div class="cm-stat-label">Market value</div>
+                    <div class="cm-stat-value">@CMFormat.Money(_value)</div>
+                </div>
+                <div class="cm-stat">
+                    <div class="cm-stat-label">Gain / loss</div>
+                    <div class="cm-stat-value @("cm-" + CMFormat.Direction(_gain))">@(_gain == null ? "-" : CMFormat.Money(_gain))</div>
+                </div>
+                <div class="cm-stat">
+                    <div class="cm-stat-label">Most valuable</div>
+                    <div class="cm-stat-value home-top">@_topName</div>
+                    <div class="cm-small">@CMFormat.Money(_topValue)</div>
+                </div>
+            </div>
+            <p><a class="cm-link" href="@CMConstants.CollectionRoute">Open my collection</a></p>
+        }
+
+        <h2 class="cm-section">The catalog</h2>
+        <div class="cm-stats">
+            <div class="cm-stat">
+                <div class="cm-stat-label">Sets</div>
+                <div class="cm-stat-value">@_stats.SetCount.ToString("N0")</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Cards</div>
+                <div class="cm-stat-value">@_stats.CardCount.ToString("N0")</div>
+                <div class="cm-small">@_stats.VariantCount.ToString("N0") versions</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Sealed products</div>
+                <div class="cm-stat-value">@_stats.SealedCount.ToString("N0")</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Current prices</div>
+                <div class="cm-stat-value">@_stats.PriceCount.ToString("N0")</div>
+                <div class="cm-small">Newest @CMFormat.DateTime(_stats.NewestPrice)</div>
+            </div>
+        </div>
+
+        <h2 class="cm-section">Most valuable cards</h2>
+        <div class="cm-grid">
+            @foreach(MarketCardRow oCard in _topCards) {
+                <a class="cm-tile" href="@($"{CMConstants.CardRoute}/{oCard.CollectibleOid}")">
+                    @if(!string.IsNullOrEmpty(oCard.ThumbnailUrl)) {
+                        <img class="cm-tile-image" src="@oCard.ThumbnailUrl" alt="@oCard.Name" loading="lazy" />
+                    } else {
+                        <div class="cm-tile-image missing">No picture</div>
+                    }
+                    <div class="cm-tile-name">@oCard.Name</div>
+                    <div class="cm-tile-facts">@oCard.SetName</div>
+                    <div class="cm-tile-facts">@oCard.VersionName</div>
+                    <div class="cm-tile-price">@CMFormat.Money(oCard.Price)</div>
+                </a>
+            }
+        </div>
+        <p><a class="cm-link" href="@CMConstants.MarketRoute">See the whole market</a></p>
+    }
+</div>

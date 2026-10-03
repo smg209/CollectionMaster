@@ -1,0 +1,145 @@
+@page "/pagSetCards/{CardSetOid:long}"
+@namespace CM.Shared
+@inherits PagSetCards_Base
+
+<PageTitle>@(_set?.DisplayName ?? "Set") - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    <a class="cm-back" href="@CMConstants.CatalogRoute">&lt; All sets</a>
+
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <p class="cm-error">The set could not be loaded: @_loadError</p>
+    } else if(!_isPageDataLoaded) {
+        <p class="cm-note">Loading...</p>
+    } else if(_set == null) {
+        <p class="cm-note">This set does not exist.</p>
+    } else {
+        List<CatalogCardRow> oVisible = Visible();
+
+        <div class="set-header">
+            @if(!string.IsNullOrEmpty(_set.LogoUrl)) {
+                <img class="set-header-logo" src="@_set.LogoUrl" alt="" />
+            }
+            <div>
+                <h1 class="cm-title">@_set.DisplayName</h1>
+                <p class="cm-note">
+                    @_set.GameName - @_set.Series - @_set.Code - released @(_set.ReleasedOn?.ToString("MMM d, yyyy") ?? "unknown")
+                </p>
+            </div>
+        </div>
+
+        <div class="cm-stats">
+            <div class="cm-stat">
+                <div class="cm-stat-label">Cards</div>
+                <div class="cm-stat-value">@_set.CardCount</div>
+                <div class="cm-small">@_set.CardCountOfficial official, @_set.SealedCount sealed products</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Set value</div>
+                <div class="cm-stat-value">@(_set.SetValue == null ? "-" : CMFormat.Money(_set.SetValue))</div>
+                <div class="cm-small">One of each card, cheapest version (TCGplayer market)</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">You own</div>
+                <div class="cm-stat-value">@_set.OwnedCards of @_set.CardCount</div>
+                <div class="cm-progress"><div style="width:@(OwnedPercent())%"></div></div>
+            </div>
+        </div>
+
+        <details class="cm-panel">
+            <summary class="rarity-summary">Prices by rarity</summary>
+            <table class="cm-table">
+                <thead>
+                    <tr>
+                        <th>Rarity</th>
+                        <th class="number">Cards</th>
+                        <th class="number">With a price</th>
+                        <th class="number">Average</th>
+                        <th class="number">Total</th>
+                        <th>Most valuable</th>
+                        <th class="number">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(RarityRow oRow in RarityBreakdown()) {
+                        <tr>
+                            <td><button type="button" class="cm-button small" @onclick="() => FilterRarity(oRow.Rarity)">@oRow.Rarity</button></td>
+                            <td class="number">@oRow.Cards</td>
+                            <td class="number">@oRow.Priced</td>
+                            <td class="number">@CMFormat.Money(oRow.Average)</td>
+                            <td class="number strong">@CMFormat.Money(oRow.Total)</td>
+                            <td>
+                                @if(oRow.Top != null) {
+                                    <a class="cm-link" href="@($"{CMConstants.CardRoute}/{oRow.Top.CollectibleOid}?lang={_languageCode}")">@oRow.Top.DisplayName</a>
+                                }
+                            </td>
+                            <td class="number">@CMFormat.Money(oRow.Top?.MarketPrice)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <p class="cm-small">Each card counts once, at the price of its most expensive version (sales-based, USD).</p>
+        </details>
+
+        <div class="cm-toolbar">
+            @if(_setNames.Count > 1) {
+                <span class="cm-label">Names and pictures in</span>
+                @foreach(CatalogNameRow oName in _setNames) {
+                    <button type="button" class="cm-chip @(oName.LanguageOid == _languageOid ? "selected" : "")"
+                            title="@oName.Name" @onclick="() => SelectLanguageAsync(oName.LanguageOid)">
+                        @oName.LanguageName
+                    </button>
+                }
+            }
+        </div>
+
+        <div class="cm-toolbar">
+            <input class="cm-input" placeholder="Filter by name or number" @bind="_filter" @bind:event="oninput" />
+            <select class="cm-select" @bind="_rarity">
+                <option value="">All rarities</option>
+                @foreach(string sRarity in _rarities) {
+                    <option value="@sRarity">@sRarity</option>
+                }
+            </select>
+            <select class="cm-select" @bind="_show">
+                <option value="cards">Cards</option>
+                <option value="sealed">Sealed products</option>
+                <option value="owned">Owned</option>
+                <option value="missing">Not owned</option>
+            </select>
+            <span class="cm-label">Sort</span>
+            <select class="cm-select" @bind="_sort">
+                <option value="number">Card number</option>
+                <option value="priceDesc">Price, high to low</option>
+                <option value="priceAsc">Price, low to high</option>
+                <option value="name">Name</option>
+            </select>
+            <span class="cm-label">@oVisible.Count shown</span>
+        </div>
+
+        <div class="cm-grid">
+            @foreach(CatalogCardRow oCard in oVisible) {
+                <a class="cm-tile" href="@($"{CMConstants.CardRoute}/{oCard.CollectibleOid}?lang={_languageCode}")">
+                    @if(oCard.OwnedCount > 0) {
+                        <span class="cm-badge" title="Copies you own">@oCard.OwnedCount</span>
+                    }
+                    @if(!string.IsNullOrEmpty(oCard.ThumbnailUrl)) {
+                        <img class="cm-tile-image" src="@oCard.ThumbnailUrl" alt="@oCard.DisplayName" loading="lazy" />
+                    } else {
+                        <div class="cm-tile-image missing">No picture</div>
+                    }
+                    <div class="cm-tile-name">@oCard.DisplayName</div>
+                    @if(oCard.IsSealed) {
+                        <div class="cm-tile-facts">Sealed product</div>
+                    } else {
+                        <div class="cm-tile-facts">#@oCard.CardNumber - @oCard.Rarity</div>
+                        <div class="cm-tile-facts">@oCard.VariantCount @(oCard.VariantCount == 1 ? "version" : "versions")</div>
+                    }
+                    @if(oCard.MarketPrice != null) {
+                        <div class="cm-tile-price">@(oCard.VariantCount > 1 ? "up to " : "")@CMFormat.Money(oCard.MarketPrice)</div>
+                    }
+                </a>
+            }
+        </div>
+    }
+</div>

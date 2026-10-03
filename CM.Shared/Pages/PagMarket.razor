@@ -1,0 +1,48 @@
+@page "/pagMarket"
+@namespace CM.Shared
+@inherits PagMarket_Base
+
+<PageTitle>Market - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    <h1 class="cm-title">Market</h1>
+
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <p class="cm-error">The market data could not be loaded: @_loadError</p>
+    } else if(!_isPageDataLoaded) {
+        <p class="cm-note">Loading...</p>
+    } else {
+        <p class="cm-note">
+            Stored price history runs from @CMFormat.Date(_depth.Oldest) to @CMFormat.Date(_depth.Newest);
+            @_depth.PricesWithHistory.ToString("N0") prices have moved at least once.
+            Movers compare a price with what the same source showed for the same version earlier.
+        </p>
+
+        <div class="cm-toolbar">
+            <span class="cm-label">Movers over</span>
+            @foreach(int iDays in PagMarket_Base.Windows) {
+                <button type="button" class="cm-chip @(iDays == _days ? "selected" : "")" @onclick="() => SelectWindowAsync(iDays)">
+                    @(iDays == 1 ? "1 day" : $"{iDays} days")
+                </button>
+            }
+            <span class="cm-label">Prices of at least @CMFormat.Money(PagMarket_Base.MinimumPrice)</span>
+        </div>
+
+        <div class="market-columns">
+            <div class="cm-panel">
+                <h2 class="cm-section first">Biggest gainers</h2>
+                <CmpMarketMovers Rows="_gainers" />
+            </div>
+            <div class="cm-panel">
+                <h2 class="cm-section first">Biggest fallers</h2>
+                <CmpMarketMovers Rows="_losers" />
+            </div>
+        </div>
+
+        <h2 class="cm-section">Most valuable cards</h2>
+        <div class="cm-panel"><CmpMarketValues Rows="_topCards" /></div>
+
+        <h2 class="cm-section">Most valuable sealed products</h2>
+        <div class="cm-panel"><CmpMarketValues Rows="_topSealed" /></div>
+    }
+</div>

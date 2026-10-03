@@ -1,0 +1,30 @@
+@namespace CM.Shared
+@inherits CmpMarketMovers_Base
+
+@if(Rows.Count == 0) {
+    <p class="cm-small">Nothing yet for this window. Movers appear once prices have been stored for that many days.</p>
+} else {
+    <table class="cm-table">
+        <thead>
+            <tr><th></th><th>Card</th><th class="number">Was</th><th class="number">Now</th><th class="number">Change</th></tr>
+        </thead>
+        <tbody>
+            @foreach(MarketCardRow oRow in Rows) {
+                <tr>
+                    <td>
+                        @if(!string.IsNullOrEmpty(oRow.ThumbnailUrl)) {
+                            <img class="cm-table-thumb" src="@oRow.ThumbnailUrl" alt="" loading="lazy" />
+                        }
+                    </td>
+                    <td>
+                        <a class="cm-link" href="@($"{CMConstants.CardRoute}/{oRow.CollectibleOid}")">@oRow.Name</a>
+                        <div class="cm-small">@oRow.SetName - @oRow.VersionName - @oRow.SourceName</div>
+                    </td>
+                    <td class="number">@CMFormat.Money(oRow.OldPrice)</td>
+                    <td class="number strong">@CMFormat.Money(oRow.Price)</td>
+                    <td class="number @("cm-" + CMFormat.Direction(oRow.Change))">@CMFormat.Percent(oRow.ChangeFraction)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

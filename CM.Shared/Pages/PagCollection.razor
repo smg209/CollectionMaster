@@ -1,0 +1,194 @@
+@page "/pagCollection"
+@namespace CM.Shared
+@inherits PagCollection_Base
+
+<PageTitle>My Collection - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    <h1 class="cm-title">My Collection</h1>
+
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <p class="cm-error">The collection could not be loaded: @_loadError</p>
+    } else if(!_isPageDataLoaded) {
+        <p class="cm-note">Loading...</p>
+    } else if(_items.Count == 0) {
+        <p class="cm-note">
+            Nothing here yet. Open a card in the <a class="cm-link" href="@CMConstants.CatalogRoute">catalog</a>
+            or find one with <a class="cm-link" href="@CMConstants.SearchRoute">search</a>, then use "Add to collection" on the version you own.
+        </p>
+    } else {
+        <div class="cm-stats">
+            <div class="cm-stat">
+                <div class="cm-stat-label">Items</div>
+                <div class="cm-stat-value">@_items.Count</div>
+                <div class="cm-small">@_lines.Count different cards and conditions</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Market value</div>
+                <div class="cm-stat-value">@CMFormat.Money(_totalValue)</div>
+                <div class="cm-small">@($"{_pricedCount} of {_items.Count} items priced" + (_estimatedCount > 0 ? $", {_estimatedCount} estimated" : ""))</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Paid</div>
+                <div class="cm-stat-value">@CMFormat.Money(_totalCost)</div>
+                <div class="cm-small">@_costCount of @_items.Count items have a price paid</div>
+            </div>
+            <div class="cm-stat">
+                <div class="cm-stat-label">Gain / loss</div>
+                <div class="cm-stat-value @("cm-" + CMFormat.Direction(_totalGain))">@CMFormat.Money(_totalGain)</div>
+                <div class="cm-small">@(_gainFraction == null ? "Needs a price paid and a market price" : CMFormat.Percent(_gainFraction) + " on the items with both")</div>
+            </div>
+        </div>
+
+        @if(!string.IsNullOrEmpty(_message)) {
+            <p class="cm-ok">@_message</p>
+        }
+
+        <h2 class="cm-section">Value over time</h2>
+        <div class="cm-panel">
+            <PriceChart Series="_valueSeries" Title="Collection value" Stepped="false"
+                        EmptyText="The chart needs at least two days of stored prices for the cards you own. It fills in as prices are refreshed each day." />
+            <p class="cm-small">
+                Today's holdings valued at each day's stored prices (last @PagCollection_Base.HistoryDays days). The line starts on the first day every item had a stored price.
+            </p>
+        </div>
+
+        <h2 class="cm-section">Items</h2>
+        <div class="cm-toolbar">
+            <input class="cm-input" placeholder="Filter by card or set" @bind="_filter" @bind:event="oninput" />
+            <span class="cm-label">Sort</span>
+            <select class="cm-select" @bind="_sort">
+                <option value="value">Value, high to low</option>
+                <option value="gain">Gain, high to low</option>
+                <option value="name">Card name</option>
+                <option value="set">Set</option>
+                <option value="newest">Recently added</option>
+            </select>
+        </div>
+
+        <div class="cm-panel">
+            <table class="cm-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Card</th>
+                        <th>Version</th>
+                        <th>Condition / grade</th>
+                        <th class="number">Qty</th>
+                        <th class="number">Value each</th>
+                        <th class="number">Value</th>
+                        <th class="number">Paid</th>
+                        <th class="number">Gain</th>
+                        <th>How it was valued</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(CollectionLine oLine in VisibleLines()) {
+                        <tr>
+                            <td>
+                                @if(!string.IsNullOrEmpty(oLine.First.ThumbnailUrl)) {
+                                    <img class="cm-table-thumb" src="@oLine.First.ThumbnailUrl" alt="" loading="lazy" />
+                                }
+                            </td>
+                            <td>
+                                <a class="cm-link" href="@($"{CMConstants.CardRoute}/{oLine.First.CollectibleOid}")">@oLine.First.Name</a>
+                                <div class="cm-small">@(oLine.First.SetName + (string.IsNullOrEmpty(oLine.First.CardNumber) ? "" : $" - #{oLine.First.CardNumber}"))</div>
+                            </td>
+                            <td>@oLine.First.VersionName</td>
+                            <td>
+                                @oLine.First.GradeOrCondition
+                                @if(oLine.First.IsGraded && !(oLine.First.CertNumber ?? "").StartsWith("NOCERT-")) {
+                                    <div class="cm-small">Cert @oLine.First.CertNumber</div>
+                                }
+                            </td>
+                            <td class="number">@oLine.Quantity</td>
+                            <td class="number">@CMFormat.Money(oLine.UnitValue)</td>
+                            <td class="number strong">@CMFormat.Money(oLine.TotalValue)</td>
+                            <td class="number">@CMFormat.Money(oLine.TotalCost)</td>
+                            <td class="number @("cm-" + CMFormat.Direction(oLine.Gain))">@CMFormat.Money(oLine.Gain)</td>
+                            <td class="cm-small">@oLine.First.ValueBasis</td>
+                            <td class="line-actions">
+                                <button type="button" class="cm-button small" @onclick="() => ToggleCopies(oLine)">@(_openLineKey == LineKey(oLine) ? "Close" : "Edit")</button>
+                                <button type="button" class="cm-button small" disabled="@_isBusy" title="Remove one copy" @onclick="() => RemoveOneAsync(oLine)">Remove one</button>
+                            </td>
+                        </tr>
+
+                        @if(_openLineKey == LineKey(oLine)) {
+                            foreach(CollectionItemEdit oEdit in _edits) {
+                                <tr class="copy-row">
+                                    <td></td>
+                                    <td colspan="10">
+                                        <div class="cm-form copy-form">
+                                            @if(!oEdit.IsGraded && oLine.First.Category != "Sealed") {
+                                                <label class="cm-field">Condition
+                                                    <select class="cm-select" @bind="oEdit.ConditionOid">
+                                                        @foreach(LookupRow oCondition in _conditions) {
+                                                            <option value="@oCondition.Oid">@oCondition.Name</option>
+                                                        }
+                                                    </select>
+                                                </label>
+                                            }
+                                            <label class="cm-field">Price paid (USD)
+                                                <input class="cm-input narrow" type="number" min="0" step="0.01" @bind="oEdit.PurchasePrice" />
+                                            </label>
+                                            <label class="cm-field">Acquired on
+                                                <input class="cm-input" type="date" @bind="oEdit.AcquiredOn" />
+                                            </label>
+                                            <label class="cm-field">Notes
+                                                <input class="cm-input wide" maxlength="500" @bind="oEdit.Notes" />
+                                            </label>
+                                            <button type="button" class="cm-button small primary" disabled="@_isBusy" @onclick="() => SaveCopyAsync(oEdit)">Save</button>
+                                            <button type="button" class="cm-button small" disabled="@_isBusy" @onclick="() => RemoveCopyAsync(oEdit)">Remove this copy</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="cm-section">Value by set</h2>
+        <div class="cm-panel">
+            <table class="cm-table">
+                <thead>
+                    <tr><th>Set</th><th class="number">Items</th><th class="number">Value</th><th class="number">Paid</th><th class="number">Gain</th><th class="number">Share of value</th></tr>
+                </thead>
+                <tbody>
+                    @foreach(SetValueRow oRow in ValueBySet()) {
+                        <tr>
+                            <td><a class="cm-link" href="@($"{CMConstants.SetCardsRoute}/{oRow.CardSetOid}")">@oRow.SetName</a></td>
+                            <td class="number">@oRow.Items</td>
+                            <td class="number strong">@CMFormat.Money(oRow.Value)</td>
+                            <td class="number">@CMFormat.Money(oRow.Cost)</td>
+                            <td class="number @("cm-" + CMFormat.Direction(oRow.Gain))">@CMFormat.Money(oRow.Gain)</td>
+                            <td class="number">@(oRow.Share == null ? "" : oRow.Share.Value.ToString("P1"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="cm-section">Set completion</h2>
+        <div class="cm-panel">
+            <table class="cm-table">
+                <thead>
+                    <tr><th>Set</th><th class="number">Owned</th><th class="number">Cards in set</th><th class="number">Complete</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach(SetCompletionRow oSet in _completion) {
+                        <tr>
+                            <td><a class="cm-link" href="@($"{CMConstants.SetCardsRoute}/{oSet.CardSetOid}")">@oSet.SetName</a></td>
+                            <td class="number">@oSet.OwnedCards</td>
+                            <td class="number">@oSet.TotalCards</td>
+                            <td class="number">@oSet.Fraction.ToString("P1")</td>
+                            <td class="completion-bar"><div class="cm-progress"><div style="width:@(BarWidth(oSet))%"></div></div></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

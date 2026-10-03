@@ -1,0 +1,22 @@
+@namespace CM.Shared
+@inherits PriceChart_Base
+
+@* A line chart drawn as inline SVG: no chart library, no JavaScript. Prices are step lines -
+   a price holds until the source shows a different one. *@
+<div class="price-chart">
+    @if(!_hasData) {
+        <div class="price-chart-empty">@EmptyText</div>
+    } else {
+        @* The drawing is built as markup in the code-behind: Razor treats a <text> tag inside a
+           C# block as its own "literal text" directive, which swallows SVG's <text> element. *@
+        <svg viewBox="0 0 @Width @Height" role="img" aria-label="@Title" preserveAspectRatio="xMidYMid meet">@((MarkupString)_svgBody)</svg>
+
+        @if(_paths.Count > 1 || ShowLegend) {
+            <div class="price-chart-legend">
+                @foreach(ChartPath oPath in _paths) {
+                    <span class="legend-item"><span class="legend-swatch" style="background:@oPath.Color"></span>@oPath.Name</span>
+                }
+            </div>
+        }
+    }
+</div>

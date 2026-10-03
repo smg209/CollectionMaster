@@ -1,0 +1,75 @@
+@namespace CM.Shared
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+
+    <!-- MudBlazor: the stylesheet here and MudBlazor.min.js below are both required.
+         AddMudServices() alone compiles, then the circuit dies on the first MudBlazor input. -->
+    <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
+
+    <!-- Shared base look-and-feel (FSCommon.Blazor) - loads first so the app's own rules win the cascade -->
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/app-pages.css" />
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/app-components.css" />
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/app-lists.css" />
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/Site.css" />
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/app-modals.css" />
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/app-tabs.css" />
+    <link rel="stylesheet" href="_content/FSCommon.Blazor/css/app-toasters.css" />
+
+    <!-- CollectionMaster: global rules, then the bundle of every component's scoped .razor.css -->
+    <link rel="stylesheet" href="css/Site.css" />
+    <link rel="stylesheet" href="CM.styles.css" />
+
+    <HeadOutlet @rendermode="Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer" />
+</head>
+
+<body>
+    @* The render mode on Routes is what makes the app interactive. Registering InteractiveServer
+       in Program.cs only makes the mode available; without the attribute below every page renders
+       as static HTML and no button, input or binding does anything, with no error anywhere.
+       Fully qualified because this hand-assembled project has no implicit "using static RenderMode". *@
+    <Routes @rendermode="Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer" />
+
+    <!-- Connection and error notices. Blazor finds these two elements by id; they must live here
+         (not in a layout) so every page has them. Styled in wwwroot/css/Site.css. -->
+    <div id="components-reconnect-modal" class="components-reconnect-hide">
+        <div class="reconnect-dialog">
+            <div class="reconnect-title">Connection lost</div>
+
+            <p class="reconnect-text reconnect-when-show">
+                Reconnecting to the server. Anything you were typing is still on screen.
+            </p>
+            <p class="reconnect-text reconnect-when-failed">
+                Could not reconnect. The server may be restarting.
+            </p>
+            <p class="reconnect-text reconnect-when-rejected">
+                This session expired while you were away. Reloading starts a fresh one.
+            </p>
+
+            <div class="reconnect-actions">
+                <button type="button" class="reconnect-btn reconnect-when-failed"
+                        onclick="window.Blazor.reconnect()">Try again</button>
+                <button type="button" class="reconnect-btn reconnect-when-failed reconnect-when-rejected"
+                        onclick="location.reload()">Reload</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Something went wrong on this page.
+        <a href="" class="reload">Reload</a>
+        <span class="dismiss" title="Dismiss">&times;</span>
+    </div>
+
+    <script src="js/cookieBridge.js"></script>
+    <script src="_content/FSCommon.Blazor/js/theme.js"></script>
+    <script src="_content/FSCommon.Blazor/js/modalChrome.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+</body>
+</html>

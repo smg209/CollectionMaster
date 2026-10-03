@@ -1,0 +1,18 @@
+/* Everything else on this page uses the shared .cm-* classes in wwwroot/css/Site.css. */
+.completion-bar {
+    width: 30%;
+    min-width: 120px;
+}
+
+.line-actions {
+    white-space: nowrap;
+}
+
+.copy-row td {
+    background: var(--layout-background-color, #F4F4F4);
+}
+
+.copy-form {
+    margin: 2px 0;
+    border-style: solid;
+}

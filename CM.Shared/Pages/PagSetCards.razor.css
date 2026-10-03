@@ -1,0 +1,17 @@
+/* Everything else on this page uses the shared .cm-* classes in wwwroot/css/Site.css. */
+.set-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.set-header-logo {
+    max-height: 70px;
+    max-width: 220px;
+}
+
+.rarity-summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary, #2B2B2B);
+}

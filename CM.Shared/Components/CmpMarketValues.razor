@@ -1,0 +1,28 @@
+@namespace CM.Shared
+@inherits CmpMarketValues_Base
+
+@if(Rows.Count == 0) {
+    <p class="cm-small">No prices yet.</p>
+} else {
+    <table class="cm-table">
+        <thead>
+            <tr><th></th><th>Name</th><th>Set</th><th>Version</th><th>Rarity</th><th class="number">TCGplayer market</th></tr>
+        </thead>
+        <tbody>
+            @foreach(MarketCardRow oRow in Rows) {
+                <tr>
+                    <td>
+                        @if(!string.IsNullOrEmpty(oRow.ThumbnailUrl)) {
+                            <img class="cm-table-thumb" src="@oRow.ThumbnailUrl" alt="" loading="lazy" />
+                        }
+                    </td>
+                    <td><a class="cm-link" href="@($"{CMConstants.CardRoute}/{oRow.CollectibleOid}")">@oRow.Name</a></td>
+                    <td>@oRow.SetName</td>
+                    <td>@oRow.VersionName</td>
+                    <td>@oRow.Rarity</td>
+                    <td class="number strong">@CMFormat.Money(oRow.Price)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,30 @@
+@namespace CM.Shared
+@inherits MainLayout_Base
+
+@* MudBlazor providers (dialogs, snackbars, popovers) and the global spinner. Mounted once here. *@
+<FSCommon.MudProviders />
+<FSCommon.CmpSpinnerOverlay />
+
+<div class="cm-layout">
+    <header class="top-bar">
+        <a href="@CMConstants.HomeRoute" class="top-bar-brand">
+            <img src="images/logo.png" alt="" class="top-bar-logo" />
+            <span class="top-bar-title">CollectionMaster</span>
+        </a>
+
+        <nav class="top-bar-tabs" aria-label="Primary">
+            @foreach(MainMenuTab oTab in _tabs) {
+                <a class="top-bar-tab @(IsActive(oTab) ? "active" : "")" href="@oTab.Route">@oTab.Text</a>
+            }
+        </nav>
+
+        <div class="top-bar-right">
+            <!-- Logged-in user. Mandatory in every app's MainLayout. It attaches to AppState on its own. -->
+            <LoggedInUser />
+        </div>
+    </header>
+
+    <main class="cm-main">
+        @Body
+    </main>
+</div>

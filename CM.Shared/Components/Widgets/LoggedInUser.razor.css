@@ -1,0 +1,79 @@
+.loggedin-user {
+    position: relative;
+    display: inline-block;
+}
+
+.user-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--main-menu-text, #2B2B2B);
+    font: inherit;
+}
+
+.user-name {
+    font-weight: 500;
+}
+
+.user-trigger:hover .user-name {
+    font-weight: 700;
+}
+
+.person-icon {
+    display: block;
+}
+
+/* Placeholder while AppState is still attaching, so the top bar does not jump. */
+.user-skeleton {
+    display: inline-block;
+    width: 120px;
+    height: 14px;
+    border-radius: 7px;
+    background: var(--header-background, #EAEAEA);
+}
+
+/* Covers the page while the menu is open; a click on it closes the menu. */
+.user-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 999;
+}
+
+.user-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    width: max-content;
+    min-width: 160px;
+    max-width: 280px;
+    margin: 0;
+    padding: 0.25rem 0;
+    list-style: none;
+    background: var(--main-page-background, #FFFFFF);
+    border: 1px solid var(--border-primary, #8FAAEA);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+}
+
+.user-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--text-primary, #2B2B2B);
+}
+
+.user-menu-item:hover {
+    background: rgba(0, 0, 0, 0.06);
+}

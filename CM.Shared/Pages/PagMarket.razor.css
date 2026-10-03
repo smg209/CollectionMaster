@@ -1,0 +1,10 @@
+/* Everything else on this page uses the shared .cm-* classes in wwwroot/css/Site.css. */
+.market-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 14px;
+}
+
+.cm-section.first {
+    margin-top: 0;
+}

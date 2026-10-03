@@ -1,0 +1,66 @@
+@page "/pagSets"
+@namespace CM.Shared
+@inherits PagSets_Base
+
+<PageTitle>Catalog - CollectionMaster</PageTitle>
+
+<div class="page-container">
+    <h1 class="cm-title">Catalog</h1>
+
+    @if(!string.IsNullOrEmpty(_loadError)) {
+        <p class="cm-error">The sets could not be loaded: @_loadError</p>
+    } else if(!_isPageDataLoaded) {
+        <p class="cm-note">Loading...</p>
+    } else if(_sets.Count == 0) {
+        <p class="cm-note">No sets have been imported yet.</p>
+    } else {
+        <p class="cm-note">
+            @_sets.Count sets, @(_sets.Sum(oSet => oSet.CardCount).ToString("N0")) cards,
+            @(_sets.Sum(oSet => oSet.SealedCount).ToString("N0")) sealed products, in @_languages.Count @(_languages.Count == 1 ? "language" : "languages").
+        </p>
+
+        <div class="cm-toolbar">
+            <input class="cm-input wide" placeholder="Filter sets by name, code or series" @bind="_filter" @bind:event="oninput" />
+            <select class="cm-select" @bind="_language">
+                <option value="">All languages</option>
+                @foreach(string sLanguage in _languages) {
+                    <option value="@sLanguage">@sLanguage</option>
+                }
+            </select>
+            <span class="cm-label">Sort</span>
+            <select class="cm-select" @bind="_sort">
+                <option value="series">By series, newest first</option>
+                <option value="newest">Newest first</option>
+                <option value="value">Most valuable first</option>
+                <option value="name">Name</option>
+            </select>
+        </div>
+
+        @foreach(var oGroup in Groups()) {
+            <h2 class="cm-section">@oGroup.Key</h2>
+
+            <div class="cm-grid sets">
+                @foreach(CatalogSetRow oSet in oGroup) {
+                    <a class="cm-tile" href="@($"{CMConstants.SetCardsRoute}/{oSet.CardSetOid}")">
+                        <div class="cm-tile-logo">
+                            @if(!string.IsNullOrEmpty(oSet.LogoUrl)) {
+                                <img src="@oSet.LogoUrl" alt="" loading="lazy" />
+                            } else {
+                                <span>@oSet.Code</span>
+                            }
+                        </div>
+                        <div class="cm-tile-name">@oSet.DisplayName</div>
+                        <div class="cm-tile-facts">@oSet.Code - @oSet.CardCount cards - @(oSet.ReleasedOn?.ToString("MMM yyyy") ?? "no date")</div>
+                        @if(oSet.SetValue != null) {
+                            <div class="cm-tile-price">Set value @CMFormat.Money(oSet.SetValue)</div>
+                        }
+                        @if(oSet.OwnedCards > 0 && oSet.CardCount > 0) {
+                            <div class="cm-tile-facts">You own @oSet.OwnedCards of @oSet.CardCount</div>
+                            <div class="cm-progress"><div style="width:@(Percent(oSet))%"></div></div>
+                        }
+                    </a>
+                }
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,8 @@
+@namespace CM.Shared
+
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(PagNotFound)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

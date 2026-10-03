@@ -55,3 +55,16 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Local development settings (connection strings, JWT secret) - never commit
+appsettings.Development.json
+appsettings.Local.json
+
+# Visual Studio / Rider per-user files
+.vs/
+.idea/
+*.user
+
+# Python tools
+__pycache__/
+*.pyc

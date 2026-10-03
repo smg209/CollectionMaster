@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>CM</RootNamespace>
+
+    <!-- .NET 10 only ships the Blazor script (_framework/blazor.web.js) with a project that contains
+         .razor files. This project has none (they live in CM.Shared), so without this property the
+         script is a 404, no circuit starts, and every page renders but nothing on it responds. -->
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="MudBlazor" Version="9.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CM.Shared\CM.Shared.csproj" />
+    <ProjectReference Include="..\..\FSAuthentication\FSAuth.Core\FSAuth.Core.csproj" />
+    <ProjectReference Include="..\..\FSAuthentication\FSAuth.Server\FSAuth.Server.csproj" />
+    <ProjectReference Include="..\..\FSCommon.Util\FSCommon.Util.csproj" />
+    <ProjectReference Include="..\..\FSDataUtil\FSDataUtil.Core\FSDataUtil.Core.csproj" />
+    <ProjectReference Include="..\..\FSDataUtil\FSDataUtil.Server\FSDataUtil.Server.csproj" />
+  </ItemGroup>
+
+</Project>

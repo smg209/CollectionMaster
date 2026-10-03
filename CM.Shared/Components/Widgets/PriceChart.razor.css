@@ -1,0 +1,42 @@
+.price-chart {
+    width: 100%;
+    max-width: 720px;
+}
+
+.price-chart svg {
+    /* Grid lines and axis labels are drawn in currentColor. */
+    color: var(--text-secondary, #495057);
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.price-chart-empty {
+    padding: 14px;
+    border: 1px dashed rgba(128, 128, 128, 0.4);
+    border-radius: 8px;
+    color: var(--text-secondary, #495057);
+    font-size: 0.85rem;
+}
+
+.price-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #495057);
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+}
